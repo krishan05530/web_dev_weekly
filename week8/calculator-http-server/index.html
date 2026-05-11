@@ -1,0 +1,74 @@
+<html>
+
+<head>
+
+  <script>
+    // this is add req
+    /*
+    async function add()
+    {
+      const a= document.getElementById("first").value;
+      const b =document.getElementById("second").value;
+      const res=await fetch("http://localhost:3000/multply/"+a+"/"+b);
+      const json = await res.json();
+      document.getElementById("response").innerHTML=json.ans;
+    } 
+      */
+
+    // i want post req with json body, here i would add headers : it tells about metadata ,  "Content-type":"application.json"     it mean json data is getting sended, so decode it 
+    async function add() {
+      const a = document.getElementById("first").value;
+      const b = document.getElementById("second").value;
+
+
+      // //  i can send via axios also , here it wait for full data , then only this promise get resolved
+      // const response = await axios.post("http://localhost:3000/sum/", {
+      //   a: a,
+      //   b: b
+      // })
+
+
+
+      //fetch is slightly better , how  
+      // here we have await , so even when we dont have fulldata , we have status code , as response contain status
+      const res = await fetch("http://localhost:3000/sum/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({   // so need to  convert jaon into string  , when using fecth 
+          a: a,
+          b: b
+        })
+      },
+
+        // res.status  so we get the status 
+
+        // if u want ful data , then use another wait , so it gives option 
+      );
+      const json = await res.json(); /// this promise resolve when all the data is recived
+      document.getElementById("response").innerHTML = json.ans;
+    }
+
+
+
+
+  </script>
+
+</head>
+
+
+<body>
+
+  <input id="first" type="text" placeholder="first number" />
+  <input id="second" type="text" placeholder="second number" />
+
+  <button onClick="add()">Add </button>
+  <button>Sub </button>
+  <button>Div </button>
+  <button>mul </button>
+
+  <div id="response"></div>
+</body>
+
+</html>

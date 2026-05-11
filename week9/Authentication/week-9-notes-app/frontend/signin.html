@@ -1,0 +1,44 @@
+<!-- login -->
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+       <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <script>
+
+       async  function signin()
+         {
+            // read the username , password
+          const username=  document.getElementById("username").value;
+             const password= document.getElementById("password").value;
+         const response=   await axios.post("http://localhost:3000/signin", {
+                username, password
+             })   
+
+             const token = response.data.token;  // so after singin , now i have to have this token to persist ,  
+            //   now i will store this token in local storage , so that i can use this token to access the notes page 
+             localStorage.setItem("token", token);
+            // after singin , then redirect to notes page
+            window.location='/';
+         }
+    </script>
+</head>
+<body>
+    <!-- singup page -->
+
+    <input type="text" id="username" placeholder="username">
+
+    <input type="password" id="password" placeholder="password"/>
+
+    <button onclick="signin()" >
+        signin
+    </button>
+    
+</body>
+</html>

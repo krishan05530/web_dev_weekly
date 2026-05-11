@@ -1,0 +1,32 @@
+# Ignore a specific file
+secret.txt
+
+
+
+# Ignore all files with a specific extension
+*.log
+
+# Ignore all .txt files except one
+*.txt
+!important.txt
+
+# Use wildcard for specific folders
+build/*.tmp
+
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Dependencies
+node_modules/
+venv/
+
+# Environment Variables
+.env
+.env.local
+
+# Build files
+dist/
+build/
+*.exe

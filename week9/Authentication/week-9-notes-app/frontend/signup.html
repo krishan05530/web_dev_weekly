@@ -1,0 +1,39 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+       <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <script>
+
+       async  function signup()
+         {
+            // read the username , password
+          const username=  document.getElementById("username").value;
+             const password= document.getElementById("password").value;
+          const response=  await axios.post("http://localhost:3000/signup", {
+                username, password
+             })
+
+            // after singup , then redirect to signin
+            window.location='/signin';
+         }
+    </script>
+</head>
+<body>
+    <!-- singup page -->
+
+    <input type="text" id="username" placeholder="username">
+
+    <input type="password" id="password" placeholder="password"/>
+
+    <button onclick="signup()" >
+        signup
+    </button>
+    
+</body>
+</html>

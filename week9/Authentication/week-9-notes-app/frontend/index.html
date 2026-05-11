@@ -1,0 +1,83 @@
+<html>
+
+<head>
+    <!--  so i can use axios , added this script tag , cdn -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+</head>
+
+<body>
+
+    <div style="display: flex; justify-content:space-between; padding : 0px 100px;">
+        <div id="notes">
+            Loading..
+        </div>
+        <div>
+            <input type="text" id="usernote" />
+            <button onclick="addTodo()">Create notes</button>
+        </div>
+    </div>
+
+    <!--  as page loads , get all the notes and render thm -->
+    <script>
+
+        function addTodo() {
+            // now i wil call the post method , so all the content in input text , i will have to create node and add it into 
+            axios.post("http://localhost:3000/notes", {
+                note: document.getElementById("usernote").value
+            },{
+                headers:{
+                    token : localStorage.getItem("token")
+                }
+            })
+
+
+            // now i should add this content to screen also 
+            //DOM mnipulation // show the todo in frontend 
+            const newNode = document.createElement("div");
+            newNode.innerHTML = document.getElementById("usernote").value
+            document.getElementById("notes").appendChild(newNode);
+            newNode.setAttribute("style", "border:2px solid black; padding:10px;")
+            document.getElementById("usernote").value = ""
+
+        }
+
+        async function getTodo() {
+            // alert("hi");
+            //   so fetch 
+
+            // fetch , axios, axios is based on fetch 
+            /* const response = await fetch("http://localhost:3000/notes")
+             const json = await response.json();
+             console.log(json.notes);
+            */
+
+  // now after singin , i will be redirected to this page , so i will have to use the token to access the notes page , so now i will have to send this token in header of this request
+  const token = localStorage.getItem("token");
+            const response = await axios.get("http://localhost:3000/notes",{
+                headers:{
+                    token : localStorage.getItem("token")
+                }
+            });
+
+            console.log(response.data.notes);
+            const notes = response.data.notes;
+
+            // remove the loading first
+            document.getElementById("notes").innerHTML = "";  // so loading will not appear here
+            for (let i = 0; i < notes.length; i++) {
+                const noteNode = document.createElement("div");
+                noteNode.innerHTML = notes[i].note;  // note[i]={useername, note}
+                noteNode.setAttribute("style", "border:2px solid black; padding:10px;")
+                document.getElementById("notes").appendChild(noteNode);     // append the  note to notes 
+            }
+        }
+
+        // this function will be called as soon as page loads , so that all the notes will be rendered on screen    
+        getTodo();
+
+    </script>
+
+</body>
+
+</html>
