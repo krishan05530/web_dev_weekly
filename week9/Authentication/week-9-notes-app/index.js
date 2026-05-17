@@ -5,7 +5,7 @@ app.use(express.json());
 
 // import middleware
 
-const { authMiddleWare } = require("./middelware");
+const { authMiddleWare } = require("./middleware");
 // creaet a note 
 // get all y notes 
 const notes = [{ username: "krishan", note: "got to gym" }]; /// this is in memeory , this is bad, this is inmemory 
