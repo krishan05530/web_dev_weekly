@@ -30,3 +30,5 @@ venv/
 dist/
 build/
 *.exe
+node_modules/
+.envcd 

@@ -200,7 +200,6 @@ res.status(200).json({
 })
 })
 
-
 // now create the todo
 app.post("/todo", AuthMiddleware,async (req,res)=>{
 const userId= req.userId;
@@ -254,9 +253,6 @@ app.get("/todo",AuthMiddleware,async (req,res)=>{
 
       const userId= req.userId;
     const userTodo= await todoModel.find({userId:userId})
-
-
-
     if(!userTodo)
     {
        return res.status(200).json({
@@ -268,14 +264,6 @@ res.status(200).json({
     todo:userTodo
 })
 })
-
-
-
-
-
-
-
-
 app.listen(3000, ()=>{
     console.log("Server is running on port 3000");
 })
