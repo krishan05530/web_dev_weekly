@@ -14,7 +14,7 @@ function AuthMiddleware(req,res,next)
     // now verify this token 
     const decode = jwt.verify(token,"krishan123");
             
-    const userId=  parseInt(decode.userId);
+    const userId=  decode.userId;
 
   if(!userId)
   {
