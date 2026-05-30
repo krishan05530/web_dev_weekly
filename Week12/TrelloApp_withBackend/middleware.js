@@ -10,8 +10,8 @@ function AuthMiddleware(req, res, next) {
             message: "you are not logged in"
         })
     }
-        console.log(req.headers);
-console.log(token);
+        // console.log(req.headers);
+    //    console.log(token);
 
     // now decode the tokon 
 

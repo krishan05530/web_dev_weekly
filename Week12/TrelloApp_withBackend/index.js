@@ -84,11 +84,11 @@ app.post("/organization", AuthMiddleware, async (req, res) => {     // authentic
     // now after login user can create organisation , so token will be given to it  after login
 
     const userId = req.userId; // we will get the userId from req object which we have added in AuthMiddleware           after verifying the token
-    const newOrg = organizationModel.create({
+    const newOrg =await organizationModel.create({
         title: req.body.title,
         description: req.body.description,
         admin: userId,
-        member: []
+        members: []
     })
 
     res.json({
@@ -173,43 +173,79 @@ const org = await organizationModel.findById(organizationId);
 */
 
 app.post("/add-member-to-organization", AuthMiddleware, async (req, res) => {
+           
+      const userId= req.userId;
+      const organizationId= req.body.organizationId;
+      const memberUsername=req.body.memberUsername;
 
-const memberUser = await userModel.findOne({
-    username: memeberUserName
-});
 
-if (!memberUser) {
-    return res.status(404).json({
-        message: "user with this username not found"
-    });
-}
+      // check this if thier any organization like this 
+      const organization=await  organizationModel.findById(organizationId);
 
-const org = await organizationModel.findById(organizationId);
+console.log("admin:", organization.admin);
+console.log("userId:", userId);
+console.log(typeof organization.admin);
+console.log(typeof userId);
 
-if (!org) {
-    return res.status(404).json({
-        message: "organization not found"
-    });
-}
+   // now check does ogranization exist, and is this organization admin is the user
+   if(!organization || organization.admin.toString()!==userId)
+   {
+    return res.status(411).json({
+message:"Either this org doesnt exist or you are not an admin of this org"
+    })
+   }
+        
+   // find the user, which admin want to enter 
+        const memberUser = await userModel.findOne({
+            username: memberUsername
+        });
 
-// check if already member
-const alreadyMember = org.members.some(
-    member => member.toString() === memberUser._id.toString()
-);
+        if (!memberUser) {
+            return res.status(404).json({
+                message: "user with this username not found"
+            });
+        }
+        // check if already member
+        const alreadyMember = organization.members.includes(memberUser._id);
 
-if (alreadyMember) {
-    return res.status(400).json({
-        message: "user is already a member of this organization"
-    });
-}
+         if (alreadyMember) {
+           return res.status(400).json({
+               message: "user is already a member of this organization"
+           });
+       }
 
-// add new member
-org.members.push(memberUser._id);
+       // add new member
+       /* 
+          await organization.updateOne({                   
+        _id:organizationId            // on this basis
+       },{
+         $push:{               
+            "members":memberUser._id          // add this one
+         }
+       })
 
-await org.save();
+       */
+
+/*
+       const result =await organizationModel.updateOne({                   
+        _id:organizationId
+       },{
+         $push:{
+            "members":memberUser._id
+         }
+       })
+         */
+
+
+    //     we have another way to do this 
+    organization.members.push(memberUser._id);
+    await organization.save();
+    
+       console.log(result);
 
 res.status(200).json({
-    message: "new member added to organization successfully"
+    message: "new member added to organization successfully",
+    id:memberUser
 });
 })
 
@@ -248,29 +284,23 @@ app.put("/issues", (req, res) => {
 
 // localhost:3000/organization?organizationId=1 , i will send the detail of this organization 
 app.get("/organization", AuthMiddleware, async(req, res) => {
-
-    // her i should simply show 
-    // olny the admin of the meber can use it 
-    const userId = req.userId;
-    //  user will send the organizationid in the query parame
-    const orgnaizationId = req.query.organizationId;  // query paramter is always string , but in our system we are using int .
-    // this organization admin should be same to userid 
-
-
-    // chekc if this organisaton exist or not .
-    const organization = await organizationModel.findById({
-        _id:organizationId
-    });
-
-
-    if (!organization || organization.admin !== userId) {
-        return res.status(403).json({
-            message: "either this orgnization dosnt exist or you are not the admin of this orgnization"
-        })
-    }
-
-
+             const userId= req.userId;
+             const organizationId= req.query.organizationId;
    
+
+
+      // check this if thier any organization like this 
+      const organization=await  organizationModel.findById(organizationId);
+        // now check does ogranization exist, and is this organization admin is the user
+        if(!organization || organization.admin.toString()!==userId)
+        {
+            return res.status(411).json({
+        message:"Either this org doesnt exist or you are not an admin of this org"
+            })
+        }
+
+
+   /*
     res.json({
         organization: {
             ...organization,  // spread operator , copy the organization object and then modify the members array to return the username of all the members instead of userid
@@ -285,7 +315,27 @@ app.get("/organization", AuthMiddleware, async(req, res) => {
             })
         }
     })
+        */
+/*
+ res.json({
+        organization:organization  // spread operator , copy the organization object and then modify the members array to return the username of all the members instead of userid
+    })
+*/
 
+const members=await userModel.find({
+    _id:organization.members
+})
+
+ res.json({
+        organization:{
+            title:organization.title,
+            description:organization.description,
+            members:members.map(m=>({
+                username:m.username,
+                _id:m._id
+            }))
+        }  
+    })
 
 
 
@@ -296,57 +346,62 @@ app.get("/organization", AuthMiddleware, async(req, res) => {
 // remove people from organization
 app.delete("/members", AuthMiddleware, async (req, res) => {
 
-      const userId = req.userId; // we will get the userId from req object which we have added in AuthMiddleware after verifying the token
-    const organizationId = req.body.organizationId;
-    const memeberUserName = req.body.memeberUserName;
-    // now first we will check that the user who is trying to add member is admin of that orgnization or not , if not then we will return error message that only admin can add member to orgnization
-    // const orgaization = ORGANIZATIONS.find(org=> org.id === organizationId); // we found the organization
-    const organization = await organizationModel.findOne(
-        { _id: organizationId }
-    )
-    // now we will check that the user who is trying to add member is admin of that orgnization or not
-    if (!orgaization || orgaization.admin !== userId) {
-        return res.status(403).json({
-            message: "either thhis org dosnt exist OR only admin can add member to orgnization"
-        })
-    }
 
-    // if its admin of the organisation , wo he can add member to orgnization , so we will find the user with this email and get its id and then add that id to members array of that orgnization
-    // now i will find the user which memeberUserName i have , so first find the userid of  this username 
+     const userId= req.userId;
+      const organizationId= req.body.organizationId;
+      const memberUsername=req.body.memberUsername;
 
 
- 
-  const memberUser= await userModel.findOne(
-    {
-        username:memeberUserName
-    }
-  )
+      // check this if thier any organization like this 
+      const organization=await  organizationModel.findById({
+        _id:organizationId
+      });
+        // now check does ogranization exist, and is this organization admin is the user
+        if(!organization || organization.admin.toString()!==userId)
+        {
+            return res.status(411).json({
+        message:"Either this org doesnt exist or you are not an admin of this org"
+            })
+        } 
 
-    if (!memberUser) {
-        return res.status(404).json({
-            message: "user with this username not found"
-        })
-    }
 
-    // so deleet this user from members array of that orgnization
-    // orgaization.members = orgaization.members.filter(memberId => memberId !== memberUser.id);
-    await organizationModel.updateOne({
-        _id:orgnaizationId
-    },
-    {
-        "$pullAll":{
-            members:memberUser._id
+         const memberUser = await userModel.findOne({
+            username: memberUsername
+        });
+
+
+        if (!memberUser) {
+            return res.status(404).json({
+                message: "user with this username not found"
+            });
         }
-    }
-     
-)
+
+
+                    // now i have to delete the member from the organization
+                    /*
+            await organizationModel.updateOne({                   
+                    _id:organizationId
+                },{
+                    $pull:{
+                        "members":memberUser._id
+                    }
+                })
+    */
+
+                organization.members = organization.members.filter(
+                    id => id.toString() !== memberUser._id.toString()
+                );
+              await organization.save();
+
 
     res.status(200).json({
-        usernae: memeberUserName,
+        username:memberUsername,
         message: "succesfully deleted the member"
     })
 
 })
+
+
 
 app.get("/", (req, res) => {
     res.send("welcome trello");
